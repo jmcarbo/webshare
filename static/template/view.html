@@ -19,7 +19,7 @@
   <body>
     <div class="container-fluid">
       <div class="row">
-        <div class="text-center text-primary"> <h1> Webshare </h1></div>
+        <div class="text-center text-primary"> <h1> {{ .Title }} </h1></div>
         <div class="col-md-1"></div>
         <div class="col-md-10">
 
@@ -37,12 +37,20 @@
             <input name="file" type="file" class="file">
           </form>
 
+          <form action="/newdir/{{.Path}}" method="POST" class="form-inline">
+	    <input type="submit" class="btn btn-primary" aria-hidden="true" value="New folder"/>
+	    <div class="form-group">
+            <input name="dirname" id="dirname" type="text" class="form-control">
+            </div>
+          </form>
+
           <table class="table table-hover">
             <thead>
               <th data-sort="string"> Name </th>
               <th data-sort="string"> Size </th>
               <th data-sort="string"> Mode </th>
               <th data-sort="string"> Modify </th>
+              <th data-sort="string">  </th>
             </thead>
             {{ range $file := .Files }}
             <tr>
@@ -61,6 +69,11 @@
               </td>
               <td>
                 {{ $file.ModTime | humanizeTime }}
+              </td>
+              <td>
+		<a href="/delete/{{$.Path}}/{{$file.Name}}"> 
+	        <button type="button" class="btn btn-danger" aria-hidden="true">Delete</button>
+		</a>
               </td>
             </tr>
             {{ end }}

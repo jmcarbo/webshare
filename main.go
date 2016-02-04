@@ -17,6 +17,7 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"github.com/op/go-logging"
+	"github.com/abbot/go-http-auth"
 )
 
 var (
@@ -25,12 +26,13 @@ var (
 		"%{color}%{time:15:04:05.000} - %{level:.4s} %{color:reset} %{message}")
 	cfgPort = 8888
 	cfgPath = "/"
+	cfgTitle = "webshare"
 )
 
 const (
 	version = "0.1"
 	usage   = `Usage:
-	webshare [--port=NUM] [PATH]
+	webshare [--title=TITLE] [--port=NUM] [PATH]
 	webshare --version
 	webshare --help
 
@@ -44,6 +46,29 @@ func setupLogging() {
 	leveledBackend := logging.SetBackend(formatedBackend)
 	leveledBackend.SetLevel(logging.INFO, "")
 	logging.SetBackend(leveledBackend)
+}
+
+type newdirHandler struct {
+	root string
+}
+
+func newdirServer(root string) http.Handler {
+	return &newdirHandler{root}
+}
+
+func (u *newdirHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("dirname")
+	dir := strings.TrimPrefix(r.URL.Path, "/newdir/")
+	dst := path.Join(u.root, dir, name)
+    	os.MkdirAll(dst, 0755)
+	log.Info(dst)
+	url := r.Header.Get("Referer")
+
+	if url != "" {
+		http.Redirect(w, r, url, http.StatusFound)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 type uploadHandler struct {
@@ -82,6 +107,16 @@ func (u *uploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info("upload file %s with size %d successfully\n", fileHeader.Filename, size)
+
+	if strings.Contains(fileHeader.Filename, ".zip") {
+		log.Info("Unziping %s\n", fileHeader.Filename)
+		err := Unzip(dst, path.Dir(dst))	
+		if err != nil {
+			msg := fmt.Sprintf("unable to unzip file, %s", err)
+			log.Error(msg)
+			//http.Error(w, msg, http.StatusInternalServerError)
+		}
+	}
 
 	url := r.Header.Get("Referer")
 
@@ -183,7 +218,7 @@ func (v *viewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Navigation []navigation
 		Files      []os.FileInfo
 	}{
-		"webshare",
+		cfgTitle,
 		r.URL.Path,
 		buildNavigation(r.URL.Path, "", "/ui"),
 		files,
@@ -260,6 +295,40 @@ func Log(handler http.Handler) http.Handler {
 	})
 }
 
+
+type deleteHandler struct {
+	root string
+}
+
+func deleteServer(root string) http.Handler {
+	return &deleteHandler{root}
+}
+
+func (u *deleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    dir := strings.TrimPrefix(r.URL.Path, "/delete/")
+    dst := path.Join(u.root, dir)
+    err:= os.RemoveAll(dst)
+    if err != nil {
+	log.Error("error %s", err)
+    }
+	log.Info(dst)
+	url := r.Header.Get("Referer")
+
+	if url != "" {
+		http.Redirect(w, r, url, http.StatusFound)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func Secret(user, realm string) string {
+        if user == "john" {
+                // password is "hello"
+                return "b98e16cbc3d01734b264adba7baa3bf9"
+        }
+        return ""
+}
+
 func main() {
 	opt, err := docopt.Parse(usage, nil, false, "", false, false)
 
@@ -300,6 +369,10 @@ func main() {
 		cfgPort = port
 	}
 
+	if opt["--title"] != nil {
+		cfgTitle = opt["--title"].(string)
+	}
+
 	setupLogging()
 
 	address := fmt.Sprintf("0.0.0.0:%d", cfgPort)
@@ -307,9 +380,12 @@ func main() {
 	promoteServerAddress(cfgPort)
 
 	log.Info("start webshare on %s ...", address)
+	authenticator := auth.NewDigestAuthenticator("example.com", Secret)
 	http.Handle("/fs/", http.StripPrefix("/fs/", http.FileServer(http.Dir(cfgPath))))
-	http.Handle("/ui/", http.StripPrefix("/ui/", viewServer(cfgPath, "static/template/view.html")))
+	http.Handle("/ui/", authenticator.Wrap(http.StripPrefix("/ui/", viewServer(cfgPath, "static/template/view.html"))))
 	http.Handle("/upload/", uploadServer(cfgPath))
+	http.Handle("/delete/", deleteServer(cfgPath))
+	http.Handle("/newdir/", newdirServer(cfgPath))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
 	http.Handle("/", http.RedirectHandler("/ui/", http.StatusFound))
 	e := http.ListenAndServe(address, Log(http.DefaultServeMux))
