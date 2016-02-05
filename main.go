@@ -17,7 +17,7 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"github.com/op/go-logging"
-	"github.com/abbot/go-http-auth"
+	//"github.com/abbot/go-http-auth"
 )
 
 var (
@@ -46,6 +46,37 @@ func setupLogging() {
 	leveledBackend := logging.SetBackend(formatedBackend)
 	leveledBackend.SetLevel(logging.INFO, "")
 	logging.SetBackend(leveledBackend)
+}
+
+type unzipHandler struct {
+	root string
+}
+
+func unzipServer(root string) http.Handler {
+	return &unzipHandler{root}
+}
+
+func (u *unzipHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	dir := strings.TrimPrefix(r.URL.Path, "/unzip/")
+	dst := path.Join(u.root, dir)
+
+	if strings.HasSuffix(strings.ToLower(dst), ".zip") {
+		log.Info("Unziping %s\n", dst)
+		err := Unzip(dst, path.Dir(dst))	
+		if err != nil {
+			msg := fmt.Sprintf("unable to unzip file, %s", err)
+			log.Error(msg)
+			//http.Error(w, msg, http.StatusInternalServerError)
+		}
+	}
+
+	url := r.Header.Get("Referer")
+
+	if url != "" {
+		http.Redirect(w, r, url, http.StatusFound)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 type newdirHandler struct {
@@ -108,15 +139,6 @@ func (u *uploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("upload file %s with size %d successfully\n", fileHeader.Filename, size)
 
-	if strings.Contains(fileHeader.Filename, ".zip") {
-		log.Info("Unziping %s\n", fileHeader.Filename)
-		err := Unzip(dst, path.Dir(dst))	
-		if err != nil {
-			msg := fmt.Sprintf("unable to unzip file, %s", err)
-			log.Error(msg)
-			//http.Error(w, msg, http.StatusInternalServerError)
-		}
-	}
 
 	url := r.Header.Get("Referer")
 
@@ -196,11 +218,17 @@ func humanizeTime(value interface{}) string {
 	return t.Format("2006-01-02 15:04:05")
 }
 
+func isZip(value interface{}) bool {
+	t := value.(string)
+	return strings.HasSuffix(strings.ToLower(t),".zip")
+}
+
 func (v *viewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	html, _ := Asset(v.tmpl)
 	funcMap := template.FuncMap{
 		"humanizeBytes": humanizeBytes,
 		"humanizeTime":  humanizeTime,
+		"isZip":  isZip,
 	}
 	t, err := template.New("").Funcs(funcMap).Parse(string(html))
 
@@ -380,12 +408,13 @@ func main() {
 	promoteServerAddress(cfgPort)
 
 	log.Info("start webshare on %s ...", address)
-	authenticator := auth.NewDigestAuthenticator("example.com", Secret)
+	//authenticator := auth.NewDigestAuthenticator("example.com", Secret)
 	http.Handle("/fs/", http.StripPrefix("/fs/", http.FileServer(http.Dir(cfgPath))))
-	http.Handle("/ui/", authenticator.Wrap(http.StripPrefix("/ui/", viewServer(cfgPath, "static/template/view.html"))))
+	http.Handle("/ui/", http.StripPrefix("/ui/", viewServer(cfgPath, "static/template/view.html")))
 	http.Handle("/upload/", uploadServer(cfgPath))
 	http.Handle("/delete/", deleteServer(cfgPath))
 	http.Handle("/newdir/", newdirServer(cfgPath))
+	http.Handle("/unzip/", unzipServer(cfgPath))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
 	http.Handle("/", http.RedirectHandler("/ui/", http.StatusFound))
 	e := http.ListenAndServe(address, Log(http.DefaultServeMux))
