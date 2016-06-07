@@ -3,3 +3,6 @@ run: build
 
 build:
 	docker build -t webshare .
+
+justrun: 
+	docker run -ti -v $$PWD/test:/static -p 8888:8888 webshare /go/bin/webshare --title "JMCA upload" /static 
