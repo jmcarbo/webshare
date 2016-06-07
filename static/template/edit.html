@@ -12,11 +12,7 @@
     <link rel="stylesheet" id="theme_stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
     <link rel="stylesheet" id="icon_stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
 
-<!--
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/epiceditor/0.2.2/js/epiceditor.min.js"></script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/epiceditor/0.2.2/themes/base/epiceditor.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/epiceditor/0.2.2/themes/editor/epic-dark.css">
--->
+    <script type="text/javascript" src="/static/epiceditor/js/epiceditor.min.js"></script>
 
     <style>[class*="foundicon-"] {font-family: GeneralFoundicons;font-style: normal;}</style>
   </head>
@@ -42,6 +38,7 @@
 	// Initialize the editor with a JSON schema
 	// Set default options
 	JSONEditor.defaults.options.theme = 'bootstrap3';
+	JSONEditor.plugins.epiceditor.basePath = '/static/epiceditor';
       var editor = new JSONEditor(document.getElementById('editor_holder'),{
         schema: {
           type: "object",

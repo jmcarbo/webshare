@@ -24,3 +24,5 @@ _testmain.go
 *.prof
 /webshare
 /bindata_assetfs.go
+/test
+/test/*
