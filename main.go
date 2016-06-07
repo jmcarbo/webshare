@@ -91,7 +91,7 @@ func (u *newdirHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("dirname")
 	dir := strings.TrimPrefix(r.URL.Path, "/newdir/")
 	dst := path.Join(u.root, dir, name)
-    	os.MkdirAll(dst, 0755)
+	os.MkdirAll(dst, 0755)
 	log.Info(dst)
 	url := r.Header.Get("Referer")
 
@@ -413,6 +413,8 @@ func main() {
 	http.Handle("/ui/", http.StripPrefix("/ui/", viewServer(cfgPath, "static/template/view.html")))
 	http.Handle("/upload/", uploadServer(cfgPath))
 	http.Handle("/delete/", deleteServer(cfgPath))
+	http.Handle("/play/", playServer(cfgPath, "static/template/audio.html"))
+	http.Handle("/edit/", editServer(cfgPath, "static/template/edit.html"))
 	http.Handle("/newdir/", newdirServer(cfgPath))
 	http.Handle("/unzip/", unzipServer(cfgPath))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))

@@ -44,6 +44,13 @@
             </div>
           </form>
 
+          <form action="/edit/{{.Path}}" method="GET" class="form-inline">
+	    <input type="submit" class="btn btn-primary" aria-hidden="true" value="New file"/>
+	    <div class="form-group">
+            <input name="filename" id="dirname" type="text" class="form-control">
+            </div>
+          </form>
+
           <table class="table table-hover">
             <thead>
               <th data-sort="string"> Name </th>
@@ -71,6 +78,12 @@
                 {{ $file.ModTime | humanizeTime }}
               </td>
               <td>
+		<a href="/edit/{{$.Path}}/{{$file.Name}}"> 
+	        <button type="button" class="btn btn-primary" aria-hidden="true">Edit</button>
+		</a>
+		<a href="/play/{{$.Path}}/{{$file.Name}}"> 
+	        <button type="button" class="btn btn-primary" aria-hidden="true">Play</button>
+		</a>
 		<a href="/delete/{{$.Path}}/{{$file.Name}}"> 
 	        <button type="button" class="btn btn-danger" aria-hidden="true">Delete</button>
 		</a>

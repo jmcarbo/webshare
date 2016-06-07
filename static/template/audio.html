@@ -1,0 +1,37 @@
+<html>
+<head>
+	<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
+	<link rel="stylesheet" href="/static/bootstrap-fileinput/css/fileinput.css">
+	<script src="/static/jquery/jquery.js"></script>
+	<script src="/static/bootstrap/js/bootstrap.js"></script>
+	<link rel="stylesheet" href="https://cdn.plyr.io/1.6.20/plyr.css">
+	<script src="https://cdn.plyr.io/1.6.20/plyr.js"></script>
+</head>
+
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<a href="{{.Referer}}"> 
+			<button type="button" class="btn btn-primary" aria-hidden="true">Back</button>
+			</a>
+		</div>
+		<div class="col-md-12">
+			<div class="plyr">
+				<audio controls>
+					<!-- Audio files -->
+					<source src="/fs/{{ .FileMP3 }}" type="audio/mp3">
+					<!--
+					<source src="/path/to/audio.ogg" type="audio/ogg">
+					-->
+
+					<!-- Fallback for browsers that don't support the <audio> element -->
+					<a href="{{ .FileMP3}}">Download</a>
+				</audio>
+			</div>
+		</div>
+	</div>
+</div>
+<script>plyr.setup();</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-FROM golang:1.5
+FROM golang:1.6
 ADD . /go/src/webshare
 WORKDIR /go/src/webshare
 RUN  go get github.com/jteeuwen/go-bindata/...

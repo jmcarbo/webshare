@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>JSON Editor WYSIWYG Example</title>
+    <script src="/static/jsoneditor.min.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/sceditor/1.4.3/jquery.sceditor.bbcode.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/sceditor/1.4.3/jquery.sceditor.default.min.css">
+    <script src="//cdn.jsdelivr.net/sceditor/1.4.3/jquery.sceditor.xhtml.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/sceditor/1.4.3/themes/default.min.css">
+    <link rel="stylesheet" id="theme_stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+    <link rel="stylesheet" id="icon_stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+
+<!--
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/epiceditor/0.2.2/js/epiceditor.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/epiceditor/0.2.2/themes/base/epiceditor.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/epiceditor/0.2.2/themes/editor/epic-dark.css">
+-->
+
+    <style>[class*="foundicon-"] {font-family: GeneralFoundicons;font-style: normal;}</style>
+  </head>
+  <body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<a href="{{.Referer}}"> 
+				<button type="button" class="btn btn-primary" aria-hidden="true">Back</button>
+				</a>
+			</div>
+			<div class="col-md-12">
+			    <h1>JSON Editor WYSIWYG Example</h1>
+			    
+			    <p style='margin-bottom:20px;'>This example demonstrates JSONEditor's integration with SCEditor</p>
+			    
+			    <div id='editor_holder'></div>
+				<button type="button" id='submit' class="btn btn-primary" aria-hidden="true">Save</button>
+   			</div> 
+   		</div> 
+   	</div> 
+    <script>
+	// Initialize the editor with a JSON schema
+	// Set default options
+	JSONEditor.defaults.options.theme = 'bootstrap3';
+      var editor = new JSONEditor(document.getElementById('editor_holder'),{
+        schema: {
+          type: "object",
+	  //format: "grid",
+          title: "Blog Post",
+          properties: {
+	    frontmatter: {
+		type: "object",
+		properties: {
+            		title: {
+              			type: "string"
+            		}
+		}
+	    },
+            body: {
+              type: "string",
+              //format: "html",
+              format: "markdown",
+              options: {
+                wysiwyg: true
+              }
+            }
+          }
+        }
+	{{ if ne .StartValue "" }}
+	,
+	startval: {{.StartValue}}
+        {{end}}
+      });
+      
+      // Hook up the submit button to log to the console
+      document.getElementById('submit').addEventListener('click',function() {
+        // Get the value from the editor
+        console.log(editor.getValue());
+	$.ajax({ url: window.location, type: 'POST', contentType: 'application/json', data: JSON.stringify(editor.getValue()), dataType: 'json'});
+      });
+    </script>
+  </body>
+</html>
