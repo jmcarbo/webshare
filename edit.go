@@ -20,6 +20,15 @@ var (
 	//log    = logging.MustGetLogger("main")
 )
 
+func stringInSlice(str string, list []string) bool {
+ 	for _, v := range list {
+ 		if v == str {
+ 			return true
+ 		}
+ 	}
+ 	return false
+}
+
 type editHandler struct {
 	root string
 	tmpl string
@@ -40,11 +49,16 @@ func (u *editHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var body []byte
 
 	targetfilename := path.Join(u.root, dir)
+	extension := filepath.Ext(targetfilename)
+	if stringInSlice(extension, []string{".jpg",".gif"}) {
+		http.ServeFile(w, r, targetfilename)
+		return
+	}
+
 	if r.Method == "POST" {
 		var y map[string]interface{}
 		body, _ = ioutil.ReadAll(r.Body)
 		json.Unmarshal(body, &y)
-		extension := filepath.Ext(targetfilename)
 		log.Info(extension)
 		var z interface{}
 		if val, ok := y["frontmatter"]; ok {
@@ -65,7 +79,7 @@ func (u *editHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 			case extension == ".md":
 				newbody := y["body"]
-				body, _ = json.Marshal(z)
+				body, _ = json.MarshalIndent(z, "", "   ")
 				result := fmt.Sprintf("%s\n\n%s", body, newbody)
 				err:=ioutil.WriteFile(targetfilename, []byte(result), 0644)
 				if err != nil {
@@ -86,13 +100,15 @@ func (u *editHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Warning(err)
 			}
+			log.Warning(string(p.Content()))
+			log.Warning(string(p.FrontMatter()))
 			metadata, err := p.Metadata()
 			if err != nil {
 				log.Warning(err)
 			}
 			j := make(map[string]interface{})
 			j["frontmatter"]=metadata
-			j["body"]=p.Content()
+			j["body"]=string(p.Content())
 			body, _ = json.Marshal(j)
 		}
 	}

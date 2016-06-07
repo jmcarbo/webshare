@@ -39,6 +39,7 @@
 	// Set default options
 	JSONEditor.defaults.options.theme = 'bootstrap3';
 	JSONEditor.plugins.epiceditor.basePath = '/static/epiceditor';
+	JSONEditor.plugins.epiceditor.autogrow = true;
       var editor = new JSONEditor(document.getElementById('editor_holder'),{
         schema: {
           type: "object",
