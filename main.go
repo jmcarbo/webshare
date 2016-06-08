@@ -333,12 +333,12 @@ func deleteServer(root string) http.Handler {
 }
 
 func (u *deleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    dir := strings.TrimPrefix(r.URL.Path, "/delete/")
-    dst := path.Join(u.root, dir)
-    err:= os.RemoveAll(dst)
-    if err != nil {
-	log.Error("error %s", err)
-    }
+	dir := strings.TrimPrefix(r.URL.Path, "/delete/")
+	dst := path.Join(u.root, dir)
+	err:= os.RemoveAll(dst)
+	if err != nil {
+		log.Error("error %s", err)
+	}
 	log.Info(dst)
 	url := r.Header.Get("Referer")
 
@@ -413,6 +413,7 @@ func main() {
 	http.Handle("/ui/", http.StripPrefix("/ui/", viewServer(cfgPath, "static/template/view.html")))
 	http.Handle("/upload/", uploadServer(cfgPath))
 	http.Handle("/delete/", deleteServer(cfgPath))
+	http.Handle("/publish/", publishServer(cfgPath))
 	http.Handle("/play/", playServer(cfgPath, "static/template/audio.html"))
 	http.Handle("/edit/", editServer(cfgPath, "static/template/edit.html"))
 	http.Handle("/newdir/", newdirServer(cfgPath))

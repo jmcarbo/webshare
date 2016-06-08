@@ -17,21 +17,21 @@
     <style>[class*="foundicon-"] {font-family: GeneralFoundicons;font-style: normal;}</style>
   </head>
   <body>
-	<div class="container">
+	<div class="container-fluid">
 		<div class="row">
-			<div class="col-md-12">
-				<a href="{{.Referer}}"> 
-				<button type="button" class="btn btn-primary" aria-hidden="true">Back</button>
-				</a>
+			<div class="col-md-1"></div>
+			<div class="col-md-10">
+				<div class="col-md-12">
+					<a href="{{.Referer}}"> 
+					<button type="button" class="btn btn-primary" aria-hidden="true">Back</button>
+					</a>
+				    	<h1>{{ .FileName }}</h1>
+				    
+				    	<div id='editor_holder'></div>
+					<button type="button" id='submit' class="btn btn-primary" aria-hidden="true">Save</button>
+				</div> 
 			</div>
-			<div class="col-md-12">
-			    <h1>JSON Editor WYSIWYG Example</h1>
-			    
-			    <p style='margin-bottom:20px;'>This example demonstrates JSONEditor's integration with SCEditor</p>
-			    
-			    <div id='editor_holder'></div>
-				<button type="button" id='submit' class="btn btn-primary" aria-hidden="true">Save</button>
-   			</div> 
+			<div class="col-md-1"></div>
    		</div> 
    	</div> 
     <script>
@@ -41,29 +41,7 @@
 	JSONEditor.plugins.epiceditor.basePath = '/static/epiceditor';
 	JSONEditor.plugins.epiceditor.autogrow = true;
       var editor = new JSONEditor(document.getElementById('editor_holder'),{
-        schema: {
-          type: "object",
-	  //format: "grid",
-          title: "Blog Post",
-          properties: {
-	    frontmatter: {
-		type: "object",
-		properties: {
-            		title: {
-              			type: "string"
-            		}
-		}
-	    },
-            body: {
-              type: "string",
-              //format: "html",
-              format: "markdown",
-              options: {
-                wysiwyg: true
-              }
-            }
-          }
-        }
+        schema: {{.Schema }}
 	{{ if ne .StartValue "" }}
 	,
 	startval: {{.StartValue}}
