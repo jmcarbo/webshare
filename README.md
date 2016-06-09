@@ -5,12 +5,12 @@ Webshare is like the `SimpleHTTPServer` in Python, but with nice web ui and abil
 ## Usage
 
 ```
-webshare [--port=NUM] [PATH]
+webshare [--url-root=URI] [--title=TITLE] [--port=NUM] [PATH]
 webshare --version
 webshare --help
 
 Example:
-    webshare --port 8888 /var/log/
+    webshare --url-root /admin --port 8888 /var/log/
 ```
 
 ## Screenshot
