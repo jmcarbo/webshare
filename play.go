@@ -24,7 +24,7 @@ func playServer(root, template string) http.Handler {
 }
 
 func (u *playHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	dir := strings.TrimPrefix(r.URL.Path, "/play/")
+	dir := strings.TrimPrefix(r.URL.Path, cfgRoot + "/play/")
 	//dst := path.Join(u.root, dir)
 	html, _ := Asset(u.tmpl)
 	funcMap := template.FuncMap{

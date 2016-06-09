@@ -20,6 +20,11 @@ var (
 	//log    = logging.MustGetLogger("main")
 )
 
+func isEditable(value interface{}) bool {
+	t := value.(string)
+	return strings.HasSuffix(strings.ToLower(t),".json") || strings.HasSuffix(strings.ToLower(t),".md")
+}
+
 func stringInSlice(str string, list []string) bool {
 	for _, v := range list {
 		if v == str {
@@ -86,7 +91,7 @@ var defaultSchema = `{
 `
 func (u *editHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	dir := strings.TrimPrefix(r.URL.Path, "/edit/")
+	dir := strings.TrimPrefix(r.URL.Path, cfgRoot + "/edit/")
 	filename := r.FormValue("filename")
 	if filename != "" {
 		dir = path.Join(dir, filename)
@@ -156,6 +161,7 @@ func (u *editHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					log.Warning(err)
 				}
 		}
+
 	} else {
 		if _, err := os.Stat(targetfilename); os.IsNotExist(err) {
 			// path/to/whatever does not exist
@@ -193,6 +199,7 @@ func (u *editHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+
 	}
 
 	html, _ := Asset(u.tmpl)
@@ -213,17 +220,19 @@ func (u *editHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	//sort.Sort(byName(files))
 	//url := r.Header.Get("Referer")
-	url :=  path.Join("/ui" , path.Dir(dir))
+	url :=  path.Join(cfgRoot + "/ui" , path.Dir(dir))
 
 	t.Execute(w, struct {
 		FileName	string
 		StartValue      string
 		Referer		string
 		Schema		string
+		RootUrl         string
 	}{
 		dir,
 		string(body),
 		url,
 		schema,
+		cfgRoot,
 	})
 }

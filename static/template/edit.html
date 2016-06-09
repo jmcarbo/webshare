@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>JSON Editor WYSIWYG Example</title>
-    <script src="/static/jsoneditor.min.js"></script>
+    <script src="{{.RootUrl}}/static/jsoneditor.min.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="//cdn.jsdelivr.net/sceditor/1.4.3/jquery.sceditor.bbcode.min.js"></script>
     <link rel="stylesheet" href="//cdn.jsdelivr.net/sceditor/1.4.3/jquery.sceditor.default.min.css">
@@ -12,7 +12,7 @@
     <link rel="stylesheet" id="theme_stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
     <link rel="stylesheet" id="icon_stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
 
-    <script type="text/javascript" src="/static/epiceditor/js/epiceditor.min.js"></script>
+    <script type="text/javascript" src="{{.RootUrl}}/static/epiceditor/js/epiceditor.min.js"></script>
 
     <style>[class*="foundicon-"] {font-family: GeneralFoundicons;font-style: normal;}</style>
   </head>
@@ -38,7 +38,7 @@
 	// Initialize the editor with a JSON schema
 	// Set default options
 	JSONEditor.defaults.options.theme = 'bootstrap3';
-	JSONEditor.plugins.epiceditor.basePath = '/static/epiceditor';
+	JSONEditor.plugins.epiceditor.basePath = '{{.RootUrl}}/static/epiceditor';
 	JSONEditor.plugins.epiceditor.autogrow = true;
       var editor = new JSONEditor(document.getElementById('editor_holder'),{
         schema: {{.Schema }}
@@ -53,6 +53,7 @@
         // Get the value from the editor
         console.log(editor.getValue());
 	$.ajax({ url: window.location, type: 'POST', contentType: 'application/json', data: JSON.stringify(editor.getValue()), dataType: 'json'});
+	window.location.href = "{{.Referer}}";
       });
     </script>
   </body>

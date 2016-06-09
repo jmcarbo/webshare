@@ -27,12 +27,13 @@ var (
 	cfgPort = 8888
 	cfgPath = "/"
 	cfgTitle = "webshare"
+	cfgRoot = ""
 )
 
 const (
 	version = "0.1"
 	usage   = `Usage:
-	webshare [--title=TITLE] [--port=NUM] [PATH]
+	webshare [--url-root=ROOT] [--title=TITLE] [--port=NUM] [PATH]
 	webshare --version
 	webshare --help
 
@@ -57,12 +58,12 @@ func unzipServer(root string) http.Handler {
 }
 
 func (u *unzipHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	dir := strings.TrimPrefix(r.URL.Path, "/unzip/")
+	dir := strings.TrimPrefix(r.URL.Path, cfgRoot + "/unzip/")
 	dst := path.Join(u.root, dir)
 
 	if strings.HasSuffix(strings.ToLower(dst), ".zip") {
 		log.Info("Unziping %s\n", dst)
-		err := Unzip(dst, path.Dir(dst))	
+		err := Unzip(dst, path.Dir(dst))
 		if err != nil {
 			msg := fmt.Sprintf("unable to unzip file, %s", err)
 			log.Error(msg)
@@ -89,7 +90,7 @@ func newdirServer(root string) http.Handler {
 
 func (u *newdirHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("dirname")
-	dir := strings.TrimPrefix(r.URL.Path, "/newdir/")
+	dir := strings.TrimPrefix(r.URL.Path, cfgRoot + "/newdir/")
 	dst := path.Join(u.root, dir, name)
 	os.MkdirAll(dst, 0755)
 	log.Info(dst)
@@ -119,7 +120,7 @@ func (u *uploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dir := strings.TrimPrefix(r.URL.Path, "/upload/")
+	dir := strings.TrimPrefix(r.URL.Path, cfgRoot + "/upload/")
 	dst := path.Join(u.root, dir, path.Base(fileHeader.Filename))
 
 	outFile, err := os.Create(dst)
@@ -229,6 +230,7 @@ func (v *viewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"humanizeBytes": humanizeBytes,
 		"humanizeTime":  humanizeTime,
 		"isZip":  isZip,
+		"isEditable":  isEditable,
 	}
 	t, err := template.New("").Funcs(funcMap).Parse(string(html))
 
@@ -236,19 +238,24 @@ func (v *viewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Warning("error %s", err)
 	}
 
+
+	log.Info("Reading dir ", path.Join(v.root, r.URL.Path))
+
 	files, err := ioutil.ReadDir(path.Join(v.root, r.URL.Path))
 
 	sort.Sort(byName(files))
 
 	t.Execute(w, struct {
 		Title      string
+		RootUrl    string
 		Path       string
 		Navigation []navigation
 		Files      []os.FileInfo
 	}{
 		cfgTitle,
+		cfgRoot,
 		r.URL.Path,
-		buildNavigation(r.URL.Path, "", "/ui"),
+		buildNavigation(r.URL.Path, "", cfgRoot + "/ui"),
 		files,
 	})
 }
@@ -333,7 +340,7 @@ func deleteServer(root string) http.Handler {
 }
 
 func (u *deleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	dir := strings.TrimPrefix(r.URL.Path, "/delete/")
+	dir := strings.TrimPrefix(r.URL.Path, cfgRoot + "/delete/")
 	dst := path.Join(u.root, dir)
 	err:= os.RemoveAll(dst)
 	if err != nil {
@@ -401,6 +408,10 @@ func main() {
 		cfgTitle = opt["--title"].(string)
 	}
 
+	if opt["--url-root"] != nil {
+		cfgRoot = opt["--url-root"].(string)
+	}
+
 	setupLogging()
 
 	address := fmt.Sprintf("0.0.0.0:%d", cfgPort)
@@ -409,17 +420,17 @@ func main() {
 
 	log.Info("start webshare on %s ...", address)
 	//authenticator := auth.NewDigestAuthenticator("example.com", Secret)
-	http.Handle("/fs/", http.StripPrefix("/fs/", http.FileServer(http.Dir(cfgPath))))
-	http.Handle("/ui/", http.StripPrefix("/ui/", viewServer(cfgPath, "static/template/view.html")))
-	http.Handle("/upload/", uploadServer(cfgPath))
-	http.Handle("/delete/", deleteServer(cfgPath))
-	http.Handle("/publish/", publishServer(cfgPath))
-	http.Handle("/play/", playServer(cfgPath, "static/template/audio.html"))
-	http.Handle("/edit/", editServer(cfgPath, "static/template/edit.html"))
-	http.Handle("/newdir/", newdirServer(cfgPath))
-	http.Handle("/unzip/", unzipServer(cfgPath))
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assetFS())))
-	http.Handle("/", http.RedirectHandler("/ui/", http.StatusFound))
+	http.Handle(cfgRoot + "/fs/", http.StripPrefix(cfgRoot + "/fs/", http.FileServer(http.Dir(cfgPath))))
+	http.Handle(cfgRoot + "/ui/", http.StripPrefix(cfgRoot + "/ui/", viewServer(cfgPath, "static/template/view.html")))
+	http.Handle(cfgRoot + "/upload/", uploadServer(cfgPath))
+	http.Handle(cfgRoot + "/delete/", deleteServer(cfgPath))
+	http.Handle(cfgRoot + "/publish/", publishServer(cfgPath))
+	http.Handle(cfgRoot + "/play/", playServer(cfgPath, "static/template/audio.html"))
+	http.Handle(cfgRoot + "/edit/", editServer(cfgPath, "static/template/edit.html"))
+	http.Handle(cfgRoot + "/newdir/", newdirServer(cfgPath))
+	http.Handle(cfgRoot + "/unzip/", unzipServer(cfgPath))
+	http.Handle(cfgRoot + "/static/", http.StripPrefix(cfgRoot + "/static/", http.FileServer(assetFS())))
+	http.Handle(cfgRoot + "/", http.RedirectHandler(cfgRoot + "/ui/", http.StatusFound))
 	e := http.ListenAndServe(address, Log(http.DefaultServeMux))
 	if e != nil {
 		log.Error("%s", e)

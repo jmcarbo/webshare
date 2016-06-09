@@ -1,9 +1,9 @@
 <html>
 <head>
-	<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
-	<link rel="stylesheet" href="/static/bootstrap-fileinput/css/fileinput.css">
-	<script src="/static/jquery/jquery.js"></script>
-	<script src="/static/bootstrap/js/bootstrap.js"></script>
+	<link rel="stylesheet" href="{{.RootUrl}}/static/bootstrap/css/bootstrap.css">
+	<link rel="stylesheet" href="{{.RootUrl}}/static/bootstrap-fileinput/css/fileinput.css">
+	<script src="{{.RootUrl}}/static/jquery/jquery.js"></script>
+	<script src="{{.RootUrl}}/static/bootstrap/js/bootstrap.js"></script>
 	<link rel="stylesheet" href="https://cdn.plyr.io/1.6.20/plyr.css">
 	<script src="https://cdn.plyr.io/1.6.20/plyr.js"></script>
 </head>
@@ -20,7 +20,7 @@
 			<div class="plyr">
 				<audio controls>
 					<!-- Audio files -->
-					<source src="/fs/{{ .FileMP3 }}" type="audio/mp3">
+					<source src="{{.RootUrl}}/fs/{{ .FileMP3 }}" type="audio/mp3">
 					<!--
 					<source src="/path/to/audio.ogg" type="audio/ogg">
 					-->

@@ -2,19 +2,20 @@
   <head>
     <title>{{.Title}}</title>
 
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
-    <link rel="stylesheet" href="/static/bootstrap-fileinput/css/fileinput.css">
+    <link rel="stylesheet" href="{{.RootUrl}}/static/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="{{.RootUrl}}/static/bootstrap-fileinput/css/fileinput.css">
 
-    <script src="/static/jquery/jquery.js"></script>
-    <script src="/static/bootstrap-fileinput/js/fileinput.js"></script>
-    <script src="/static/bootstrap/js/bootstrap.js"></script>
-    <script src="/static/stupidtable.js"></script>
+    <script src="{{.RootUrl}}/static/jquery/jquery.js"></script>
+    <script src="{{.RootUrl}}/static/bootstrap-fileinput/js/fileinput.js"></script>
+    <script src="{{.RootUrl}}/static/bootstrap/js/bootstrap.js"></script>
+    <script src="{{.RootUrl}}/static/stupidtable.js"></script>
+<!--
     <script>
         $(document).ready(function() {
           $(".table").stupidtable();
         })
     </script>
-
+-->
   </head>
   <body>
     <div class="container-fluid">
@@ -34,12 +35,12 @@
             {{ end }}
           </ol>
 
-          <form action="/upload/{{.Path}}" method="POST"  enctype="multipart/form-data">
+          <form action="{{.RootUrl}}/upload/{{.Path}}" method="POST"  enctype="multipart/form-data">
             <input name="file" type="file" class="file">
           </form>
 	</div>
 	<div class="col-md-4">
-          <form action="/newdir/{{.Path}}" method="POST" class="form-inline">
+          <form action="{{.RootUrl}}/newdir/{{.Path}}" method="POST" class="form-inline">
 	    <input type="submit" class="btn btn-primary" aria-hidden="true" value="New folder"/>
 	    <div class="form-group">
             <input name="dirname" id="dirname" type="text" class="form-control">
@@ -48,7 +49,7 @@
 	</div>
 	<div class="col-md-4">
 
-          <form action="/edit/{{.Path}}" method="GET" class="form-inline">
+          <form action="{{.RootUrl}}/edit/{{.Path}}" method="GET" class="form-inline">
 	    <input type="submit" class="btn btn-primary" aria-hidden="true" value="New file"/>
 	    <div class="form-group">
             <input name="filename" id="dirname" type="text" class="form-control">
@@ -58,7 +59,7 @@
 	</div>
 	<div class="col-md-2">
 
-		<a href="/publish/"> 
+		<a href="{{.RootUrl}}/publish/"> 
 	        <button type="button" class="btn btn-primary" aria-hidden="true">Publish</button>
 		</a>
 
@@ -76,9 +77,9 @@
             <tr>
               <td>
                 {{ if $file.IsDir }}
-                <a href="/ui/{{$.Path}}/{{$file.Name}}"> {{ $file.Name }}/ </a>
+                <a href="{{$.RootUrl}}/ui/{{$.Path}}/{{$file.Name}}"> {{ $file.Name }}/ </a>
                 {{ else }}
-                <a href="/fs/{{$.Path}}/{{$file.Name}}"> {{ $file.Name }} </a>
+                <a href="{{$.RootUrl}}/fs/{{$.Path}}/{{$file.Name}}"> {{ $file.Name }} </a>
                 {{ end }}
               </td>
               <td>
@@ -91,8 +92,8 @@
                 {{ $file.ModTime | humanizeTime }}
               </td>
               <td>
-                {{ if not $file.IsDir }}
-		<a href="/edit/{{$.Path}}/{{$file.Name}}"> 
+                {{ if isEditable $file.Name }}
+		<a href="{{$.RootUrl}}/edit/{{$.Path}}/{{$file.Name}}"> 
 	        <button type="button" class="btn btn-primary" aria-hidden="true">Edit</button>
 		</a>
 		{{ end }}
@@ -101,11 +102,11 @@
 	        <button type="button" class="btn btn-primary" aria-hidden="true">Play</button>
 		</a>
 		-->
-		<a href="/delete/{{$.Path}}/{{$file.Name}}"> 
+		<a href="{{$.RootUrl}}/delete/{{$.Path}}/{{$file.Name}}"> 
 	        <button type="button" class="btn btn-danger" aria-hidden="true">Delete</button>
 		</a>
 		{{ if isZip $file.Name }}
-		<a href="/unzip/{{$.Path}}/{{$file.Name}}"> 
+		<a href="{{$.RootUrl}}/unzip/{{$.Path}}/{{$file.Name}}"> 
 	        <button type="button" class="btn btn-primary" aria-hidden="true">Unzip</button>
 		</a>
 		{{ end }}
