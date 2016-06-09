@@ -1,4 +1,5 @@
 FROM golang:1.6
+RUN cd /usr/local/bin && wget https://github.com/spf13/hugo/releases/download/v0.16/hugo_0.16_linux-64bit.tgz && tar zxvf hugo*.tgz
 ADD . /go/src/webshare
 WORKDIR /go/src/webshare
 RUN  go get github.com/jteeuwen/go-bindata/...
