@@ -20,6 +20,15 @@
          width: 25px;
          padding: 1px 1px;
       }
+.sceditor-button-headers div { background: url('/images/headers-button.png'); }
+.sceditor-header-option {
+    display: block;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    color: #222;
+}
+.sceditor-header-option:hover { background: #eee; }
     </style>
   </head>
   <body>
@@ -46,6 +55,42 @@
 	JSONEditor.defaults.options.theme = 'bootstrap3';
 	JSONEditor.plugins.epiceditor.basePath = '{{.RootUrl}}/static/epiceditor';
 	JSONEditor.plugins.epiceditor.autogrow = true;
+
+$.sceditor.command.set("headers", {
+    exec: function(caller) {
+        // Store the editor instance so it can be used
+        // in the click handler
+        var editor   = this,
+            $content = $("<div />");
+
+        // Create the 1-6 header options
+        for (var i=1; i<= 6; i++) {
+            $(
+                '<a class="sceditor-header-option" href="#">' +
+                    '<h' + i + '>Heading ' + i + '</h' + i + '>' +
+                '</a>'
+            )
+            .data('headersize', i)
+            .click(function (e) {
+                // When the option is clicked call the native contenteditable
+                // formatblock to format this block to the header
+                // 
+                // It's nearly always better to use the editors methods like
+                // insert() over the browsers native execCommand as 
+                // execCommand has many browser incompatibilites.
+                editor.execCommand("formatblock", "<h" + $(this).data('headersize') + ">");
+                editor.closeDropDown(true);
+
+                e.preventDefault();
+            })
+            .appendTo($content);
+        }
+
+        editor.createDropDown(caller, "header-picker", $content.get(0));
+    },
+    tooltip: "Format Headers"
+});
+      JSONEditor.plugins.sceditor.toolbar = "headers|bold,italic,underline|source";
       var editor = new JSONEditor(document.getElementById('editor_holder'),{
         schema: {{.Schema }}
 	{{ if ne .StartValue "" }}
@@ -53,7 +98,6 @@
 	startval: {{.StartValue}}
         {{end}}
       });
-      
       // Hook up the submit button to log to the console
       document.getElementById('submit').addEventListener('click',function() {
         // Get the value from the editor
