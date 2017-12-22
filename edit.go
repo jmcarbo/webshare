@@ -80,8 +80,8 @@ var defaultSchema = `{
 	    },
             body: {
               type: "string",
-              //format: "html",
-              format: "markdown",
+              format: "html",
+              //format: "markdown",
               options: {
                 wysiwyg: true
               }
